@@ -41,7 +41,6 @@ export async function userLogin(req: Request, res: Response) {
                     }
                 }
             }
-
         }
     } catch (error: any) {
         response.errors = error.erros;

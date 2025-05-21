@@ -1,6 +1,7 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 import authRouter from './src/routers/auth';
+import filesRouter from './src/routers/files';
 
 dotenv.config();
 const app = express();
@@ -15,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRouter);
-
+app.use('/files', filesRouter);
 
 
 const server = app.listen(port, () => {
