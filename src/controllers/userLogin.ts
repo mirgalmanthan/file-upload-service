@@ -34,7 +34,14 @@ export async function userLogin(req: Request, res: Response) {
                         statusCode: 401
                     }
                 } else {
-                    let token = generateAuthToken(user, process.env.JWT_SECRET || '', parseInt(process.env.JWT_EXPIRY_MIN || "2"))
+                    let userTokenPayoad = {
+                        userId: user.user_id,
+                        userName: user.username,
+                        password: user.password
+                    }
+                    console.log("auth token payload")
+                    console.log(userTokenPayoad)
+                    let token = generateAuthToken(userTokenPayoad, process.env.JWT_SECRET || '', parseInt(process.env.JWT_EXPIRY_MIN || "2"))
                     response.statusCode = 200;
                     response.payload = {
                         token: token

@@ -1,23 +1,35 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 
 export function verifyAuthToken(request: Request, response: Response, next: NextFunction) {
     console.log("verify token invoked");
     let token = request.headers.authorization?.replace("Bearer", "").trim() || ""
-    console.log("token:"+token)
+    console.log("token:" + token)
     try {
-        let payload = jwt.verify(token,  process.env.JWT_USER_ACCESS_TOKEN_SECRET|| "")
+        let payload = jwt.verify(token, process.env.JWT_SECRET || "")
         console.log("payload")
         console.log(payload)
-        request.body.userId = typeof payload !="string" ? payload.userId : ""
-        if(payload && typeof(payload != "string")) {
+        if (payload && typeof payload !== "string") {
             console.log("payload found")
+            if (request.body == undefined) request.body = {}
+            request['body']['userId'] = payload.userId;
+            request['body']['userName'] = payload.userName;
+            console.log(request.body)
             next()
-            return
-        } else return response.status(403);
-    } catch(e) {
-        return response.status(403).json({
+        } else {
+            response.status(403).json({
+                "error": true,
+                "error_payload": {
+                    "message": "Invalid token format"
+                }
+            })
+        }
+    } catch (e) {
+        console.log("ERROR:" + e)
+        response.status(403).json({
             "error": true,
             "error_payload": {
                 "message": "Invalid token"
