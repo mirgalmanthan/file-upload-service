@@ -1,14 +1,14 @@
 import { Request, Response, Router } from "express";
 import { verifyAuthToken } from "../middlewares/verify";
 import { handleFileUpload } from "../middlewares/file_upload";
+import { addFileRecord } from "../db/queries/files";
+import { processFile } from "../controllers/processFile";
 
 const filesRouter = Router();
 
-filesRouter.post('/upload', verifyAuthToken, handleFileUpload, (req: Request, res: Response) => {
-    console.log("uploading file");
-    console.log(req.file);
-    console.log(req.body)
-    res.status(200).json({ message: 'File uploaded successfully' });
+filesRouter.post('/upload', verifyAuthToken, handleFileUpload, async (req: Request, res: Response) => {
+    await processFile(req, res);
+    // res.status(200).json({ message: 'File uploaded successfully' });
 });
 
 export default filesRouter;

@@ -8,6 +8,8 @@ export function verifyAuthToken(request: Request, response: Response, next: Next
     console.log("verify token invoked");
     let token = request.headers.authorization?.replace("Bearer", "").trim() || ""
     console.log("token:" + token)
+    console.log('req under verify token:')
+    console.log(request.body)
     try {
         let payload = jwt.verify(token, process.env.JWT_SECRET || "")
         console.log("payload")
@@ -17,7 +19,6 @@ export function verifyAuthToken(request: Request, response: Response, next: Next
             if (!request.body) request.body = {}
             request['body']['userId'] = payload.userId;
             request['body']['userName'] = payload.userName;
-            console.log(request.body)
             next()
         } else {
             response.status(403).json({

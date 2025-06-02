@@ -48,6 +48,8 @@ export const handleFileUpload = (req: Request, res: Response, next: NextFunction
                 message: err.message 
             });
         }
+        console.log('req under multer handling:')
+        console.log(req.body)
         next();
     });
 };
