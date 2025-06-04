@@ -5,7 +5,7 @@ import { ApiResponse } from "../structs/io";
 
 export async function processFile(req: Request, res: Response) {
     console.log("processFile invoked");
-    console.log(req.file)
+    console.log(req.files)
     let response = new ApiResponse();
     try {
     await addFileRecord({

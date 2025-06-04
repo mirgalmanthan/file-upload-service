@@ -14,15 +14,17 @@ if (!fs.existsSync(uploadsDir)) {
 
 export const handleFileUpload = (req: Request, res: Response, next: NextFunction) => {
     console.log("handleFileUpload invoked");
-    console.log(req.body);
-    let userName = req.body.userName;
+    // Store the existing body to restore it after multer is done
+    const existingBody = { ...req.body };
+    let userName = existingBody.userName;
     const storage = multer.diskStorage({
         destination: (req, file, callback) => {
             callback(null, uploadsDir);
         },
         filename: (req, file, callback) => {
             console.log("filename invoked with user data:");
-            const filename = `${Date.now()}-${userName}.pdf`;
+            const fileExt = path.extname(file.originalname) || '.pdf';
+            const filename = `${Date.now()}-${userName}${fileExt}`;
             callback(null, filename);
         }
     });
@@ -31,9 +33,17 @@ export const handleFileUpload = (req: Request, res: Response, next: NextFunction
         storage: storage,
         fileFilter: (req, file, callback) => {
             console.log("file filter invoked");
-            console.log(file)
+            console.log('File info:', {
+                fieldname: file.fieldname,
+                originalname: file.originalname,
+                mimetype: file.mimetype,
+                size: file.size
+            });
             let validationErros = fileInputValidator(file, req.body);
-            if (validationErros.length > 0) return callback(new Error(validationErros.join(", ")));
+            if (validationErros.length > 0) {
+                console.log('Validation errors:', validationErros);
+                return callback(new Error(validationErros.join(", ")));
+            }
             callback(null, true);
         },
         limits: {
@@ -41,15 +51,16 @@ export const handleFileUpload = (req: Request, res: Response, next: NextFunction
         }
     }).single('file');
 
-    upload(req, res, (err) => {
+    // Parse the form data
+    upload(req as any, res as any, (err: any) => {
         if (err) {
             return res.status(400).json({ 
                 error: true, 
                 message: err.message 
             });
         }
-        console.log('req under multer handling:')
-        console.log(req.body)
+        // Restore the existing body and merge with multer's body
+        req.body = { ...existingBody, ...req.body };
         next();
     });
 };

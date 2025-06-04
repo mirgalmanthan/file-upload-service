@@ -16,9 +16,10 @@ export function verifyAuthToken(request: Request, response: Response, next: Next
         console.log(payload)
         if (payload && typeof payload !== "string") {
             console.log("payload found")
+            console.log(payload)
             if (!request.body) request.body = {}
-            request['body']['userId'] = payload.userId;
-            request['body']['userName'] = payload.userName;
+            request.body.userId = payload.userId;
+            request.body.userName = payload.userName;
             next()
         } else {
             response.status(403).json({

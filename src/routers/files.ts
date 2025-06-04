@@ -7,8 +7,10 @@ import { processFile } from "../controllers/processFile";
 const filesRouter = Router();
 
 filesRouter.post('/upload', verifyAuthToken, handleFileUpload, async (req: Request, res: Response) => {
-    await processFile(req, res);
-    // res.status(200).json({ message: 'File uploaded successfully' });
+    // await processFile(req, res);
+    console.log('Body After middlewares:')
+    console.log(req.body)
+    res.status(200).json({ message: 'File uploaded successfully' });
 });
 
 export default filesRouter;
