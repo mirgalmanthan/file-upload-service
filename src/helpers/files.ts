@@ -1,9 +1,17 @@
 import { Request } from "express";
-import { FileData, FileStatus, getFileStatus } from "../structs/file_data";
+import { IFileData, FileStatus, getFileStatus } from "../structs/file_data";
 
 export function getFileData(request: Request) {
     console.log("getFileData invoked");
-    let fileData: FileData = new FileData();
+    let fileData: IFileData = {
+        user_id: '',
+        original_filename: '',
+        storage_path: '',
+        title: '',
+        description: '',
+        status: FileStatus.UPLOADED,
+        extracted_data: ''
+    };
     try {
         if (!request.file) throw new Error("File not found");
         fileData.user_id = request.body.userId;

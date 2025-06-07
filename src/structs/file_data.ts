@@ -1,13 +1,11 @@
-export class FileData {
-    constructor(
-        public user_id: string = '',
-        public original_filename: string = '',
-        public storage_path: string = '',
-        public title: string = '',
-        public description: string = '',
-        public status: FileStatus = FileStatus.UPLOADED,
-        public extracted_data: string = ''
-    ) {}
+export interface IFileData {
+    user_id: string;
+    original_filename: string;
+    storage_path: string;
+    title: string;
+    description: string;
+    status: FileStatus;
+    extracted_data: string;
 }
 
 export function getFileStatus(status: FileStatus) {
