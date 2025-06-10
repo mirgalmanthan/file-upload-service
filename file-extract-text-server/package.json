@@ -1,7 +1,7 @@
 {
   "name": "file-extract-text-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "build": "tsc",
     "prod": "node ./dist/server.js",
@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bullmq": "^5.53.2",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "pg": "^8.16.0"
