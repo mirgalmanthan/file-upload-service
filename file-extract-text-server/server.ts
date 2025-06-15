@@ -1,6 +1,7 @@
 import express from 'express';
 import { Worker } from 'bullmq';
 import * as dotenv from 'dotenv';
+import { fetchFileFromS3 } from './src/helpers';
 
 dotenv.config();
 
@@ -19,6 +20,12 @@ app.get('/', (req, res) => {
 async function processJob(job: any) {
     console.log(`Processing job ${job.id}`);
     console.log('Job data:', job.data);
+    let filePath = job.data.filePath;
+    
+    let fetchFile = await fetchFileFromS3(filePath, 'mmsoft', job.data.filename);
+    if (!fetchFile.success) {
+        return { success: false, message: fetchFile.message };
+    }
     
     await new Promise(resolve => setTimeout(resolve, 5000));
     

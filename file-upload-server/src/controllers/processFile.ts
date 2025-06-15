@@ -8,16 +8,24 @@ import { JobStatus } from "../structs/job_data";
 import { JobType } from "../structs/job_data";
 import { assignExtractTextJob } from "../helpers/jobs";
 import { saveToS3 } from "../helpers/aws";
-import * as fs from 'fs'
+import { deleteFile } from "../helpers/files";
+import * as fs from 'fs';
 
 export async function processFile(req: Request, res: Response) {
     console.log("processFile invoked");
     let response = new ApiResponse();
+    let fileName = req.file?.filename;
+    const filePath = `uploads/${fileName}`;
     try {
-        let s3Response = await saveToS3(fs.readFileSync(`uploads/${req.file?.filename}`), 'mmsoft', 'file-upload-service', req.file?.filename || '');
+        // Upload file to S3
+        let s3Response = await saveToS3(fs.readFileSync(filePath), 'mmsoft', 'file-upload-service', fileName || '');
         if (!s3Response.success) {
             throw new Error(`${s3Response.message}`);
         }
+
+        // Delete the file from local storage after successful upload to S3
+        await deleteFile(filePath);
+
         let fileData = getFileData(req);
         let fileId = await addFileRecord(fileData);
         let jobId =  await addJobRecord({
@@ -27,9 +35,9 @@ export async function processFile(req: Request, res: Response) {
             error_message: '',
             started_at: new Date()
         });
-        let extractTextJobId = await assignExtractTextJob(req.file?.fieldname || '', req.body.userId);
+        let extractTextJobId = await assignExtractTextJob(fileName || '', req.body.userId);
         return res.status(200).json({
-            message: 'uplaoded file',
+            message: 'Uploaded file successfully and removed from local storage',
             jobId: jobId,
             extractTextJobId: extractTextJobId
         })

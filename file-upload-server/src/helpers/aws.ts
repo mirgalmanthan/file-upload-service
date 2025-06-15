@@ -13,7 +13,7 @@ export async function saveToS3(content: Buffer, bucketName: string, path: string
             Key: fileName,
             Body: content,
             ContentType: "application/pdf",
-            ACL: 'public-read-write'
+            ACL: 'private'
         }
         await s3Client.upload(params).promise()
         return {
