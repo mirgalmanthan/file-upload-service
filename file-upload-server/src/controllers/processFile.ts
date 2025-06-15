@@ -7,11 +7,17 @@ import { createJob as addJobRecord } from "../db/queries/jobs";
 import { JobStatus } from "../structs/job_data";
 import { JobType } from "../structs/job_data";
 import { assignExtractTextJob } from "../helpers/jobs";
+import { saveToS3 } from "../helpers/aws";
+import * as fs from 'fs'
 
 export async function processFile(req: Request, res: Response) {
     console.log("processFile invoked");
     let response = new ApiResponse();
     try {
+        let s3Response = await saveToS3(fs.readFileSync(`uploads/${req.file?.filename}`), 'mmsoft', 'file-upload-service', req.file?.filename || '');
+        if (!s3Response.success) {
+            throw new Error(`${s3Response.message}`);
+        }
         let fileData = getFileData(req);
         let fileId = await addFileRecord(fileData);
         let jobId =  await addJobRecord({

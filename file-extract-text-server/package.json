@@ -15,6 +15,7 @@
     "bullmq": "^5.53.2",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "pdf.js-extract": "^0.2.1",
     "pg": "^8.16.0"
   },
   "devDependencies": {
