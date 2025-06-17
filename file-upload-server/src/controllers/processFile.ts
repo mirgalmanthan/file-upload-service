@@ -35,11 +35,12 @@ export async function processFile(req: Request, res: Response) {
             error_message: '',
             started_at: new Date()
         });
-        let extractTextJobId = await assignExtractTextJob(fileName || '', req.body.userId);
+        let extractTextJobId = await assignExtractTextJob(fileName || '', req.body.userId, jobId, fileId);
         return res.status(200).json({
             message: 'Uploaded file successfully and removed from local storage',
             jobId: jobId,
-            extractTextJobId: extractTextJobId
+            extractTextJobId: extractTextJobId,
+            fileId
         })
     } catch (error: any) {
         console.log(error)

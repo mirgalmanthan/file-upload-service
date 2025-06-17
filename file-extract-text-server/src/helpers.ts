@@ -1,6 +1,7 @@
 import AWS from 'aws-sdk';
 import * as fs from 'fs';
 import * as path from 'path';
+import { PDFExtract, PDFExtractPage } from 'pdf.js-extract';
 
 export async function fetchFileFromS3(filePath: string, bucketName: string, filename: string) {
     // Create the downloaded_files directory if it doesn't exist
@@ -14,12 +15,12 @@ export async function fetchFileFromS3(filePath: string, bucketName: string, file
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     });
-    
+
     const params = {
-        Bucket: bucketName, 
+        Bucket: bucketName,
         Key: filePath
     };
-    
+
     const outputPath = path.join(downloadDir, filename);
     const fileStream = fs.createWriteStream(outputPath);
 
@@ -35,7 +36,7 @@ export async function fetchFileFromS3(filePath: string, bucketName: string, file
                 .on('error', (err) => reject(err))
                 .on('close', () => resolve(true));
         });
-        
+
         return {
             success: true,
             message: `Successfully fetched file from S3: ${filePath}`,
@@ -52,4 +53,23 @@ export async function fetchFileFromS3(filePath: string, bucketName: string, file
             filePath: ''
         };
     }
+}
+
+
+export function extractPDFData(filePath: string): Promise<PDFExtractPage[]> {
+    console.log('Extracting PDF data from file: ' + filePath);
+    const pdfExtract = new PDFExtract();
+    const options = {}; /* see below */
+    return new Promise((resolve, reject) => {
+        pdfExtract.extract(filePath, options, (err, data) => {
+            if (err) {
+                reject(err);
+            }
+            if (data && data.pages && data.pages.length > 0) {
+                resolve(data.pages);
+            } else {
+                reject(new Error('No pages found in the PDF'));
+            }
+        });
+    });
 }

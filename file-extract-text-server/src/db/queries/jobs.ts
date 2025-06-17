@@ -1,4 +1,4 @@
-import { getJobStatus, getJobType, IJobData } from "../../structs/job_data";
+import { getJobStatus, getJobType, IJobData, JobStatus } from "../../structs/job_data";
 import pool from "../db_connection";
 
 export async function createJob(jobData: IJobData) {
@@ -25,3 +25,28 @@ export async function createJob(jobData: IJobData) {
         }
     }
 }
+
+export async function updateJobStatus(fileId: string, status: JobStatus) {
+    let textQuery = status == JobStatus.COMPLETED ? `UPDATE jobs SET status = $1, completed_at = $2 WHERE id = $3 RETURNING id`:`UPDATE jobs SET status = $1 WHERE id = $2 RETURNING id`
+    let values = status == JobStatus.COMPLETED ? [getJobStatus(status), new Date(), fileId]:[getJobStatus(status), fileId]
+    const query = {
+        text: textQuery,
+        values: values
+    }
+    try {
+        console.log('Executing query:', query.text, 'with values:', query.values);
+        const result = await pool.query(query);
+        console.log('update job record response - '+ JSON.stringify(result))
+        if (result.rows.length === 0) {
+            throw new Error("Failed to update job record.");
+        }
+        return result.rows[0].id;
+    } catch (error: any) {
+        console.error('Error in updateFileRecord:', error);
+        throw {
+            statusCode: 500,
+            message: error.message
+        };
+    }
+}
+

@@ -33,6 +33,54 @@ export async function addFileRecord(fileData: IFileData) {
     }
 }
 
-export async function updateFileRecord(fileId: string, status: FileStatus) {
-    
+export async function updateFileStatus(fileId: string, status: FileStatus) {
+    const query = {
+        text: `UPDATE files SET status = $1 WHERE id = $2 RETURNING id`,
+        values: [
+            getFileStatus(status),
+            fileId
+        ]
+    }
+    console.log('Executing query:', query.text, 'with values:', query.values);
+    try {
+        const result = await pool.query(query);
+        console.log('update file record response - '+ JSON.stringify(result))
+        if (result.rows.length === 0) {
+            throw new Error("Failed to update file record.");
+        }
+        return result.rows[0].id;
+    } catch (error: any) {
+        console.error('Error in updateFileRecord:', error);
+        throw {
+            statusCode: 500,
+            message: error.message
+        };
+    }
+}
+
+
+export async function updateFileRecord(fileId: string, status: FileStatus, extractedData: string) {
+    const query = {
+        text: `UPDATE files SET status = $1, extracted_data = $2 WHERE id = $3 RETURNING id`,
+        values: [
+            getFileStatus(status),
+            extractedData,
+            fileId
+        ]
+    }
+    console.log('Executing query:', query.text, 'with values:', query.values);
+    try {
+        const result = await pool.query(query);
+        console.log('update file record response - '+ JSON.stringify(result))
+        if (result.rows.length === 0) {
+            throw new Error("Failed to update file record.");
+        }
+        return result.rows[0].id;
+    } catch (error: any) {
+        console.error('Error in updateFileRecord:', error);
+        throw {
+            statusCode: 500,
+            message: error.message
+        };
+    }
 }

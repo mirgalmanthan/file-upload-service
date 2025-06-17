@@ -1,7 +1,11 @@
 import express from 'express';
 import { Worker } from 'bullmq';
 import * as dotenv from 'dotenv';
-import { fetchFileFromS3 } from './src/helpers';
+import { extractPDFData, fetchFileFromS3 } from './src/helpers';
+import { updateFileRecord, updateFileStatus } from './src/db/queries/files';
+import { FileStatus } from './src/structs/file_data';
+import { updateJobStatus } from './src/db/queries/jobs';
+import { JobStatus } from './src/structs/job_data';
 
 dotenv.config();
 
@@ -21,16 +25,34 @@ async function processJob(job: any) {
     console.log(`Processing job ${job.id}`);
     console.log('Job data:', job.data);
     let filePath = job.data.filePath;
-    
-    let fetchFile = await fetchFileFromS3(filePath, 'mmsoft', job.data.filename);
-    if (!fetchFile.success) {
-        return { success: false, message: fetchFile.message };
+    try {
+        let fetchFile = await fetchFileFromS3(filePath, 'mmsoft', job.data.filename);
+        if (!fetchFile.success) {
+            return { success: false, message: fetchFile.message };
+        }
+
+        let updatedFileId = await updateFileStatus(job.data.fileId, FileStatus.PROCESSING);
+        let updatedJobId = await updateJobStatus(job.data.jobId, JobStatus.PROCESSING);
+
+        console.log('------Updated File and Job ID-------', updatedFileId, updatedJobId)
+        console.log(fetchFile)
+
+        //just adding extracted data to db, ideally this is incorrect. Can Process data from this scenario and save in db.
+        let extractedData = await extractPDFData(fetchFile.filePath);
+        
+        console.log('------Extracted Data-------', extractedData)
+        let fileRecord = await updateFileRecord(job.data.fileId, FileStatus.PROCESSED, JSON.stringify(extractedData));
+        let jobRecord = await updateJobStatus(job.data.jobId, JobStatus.COMPLETED);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        console.log(`Completed processing job ${job.id}`);
+        return { success: true, message: 'Text extracted successfully' };
+    } catch (error: any) {
+        let updatedFileId = await updateFileStatus(job.data.fileId, FileStatus.FAILED);
+        let updatedJobId = await updateJobStatus(job.data.jobId, JobStatus.FAILED);
+        console.log('ERROR IN PROCESS JOB', error)
+        return { success: false, message: error.message };
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    console.log(`Completed processing job ${job.id}`);
-    return { success: true, message: 'Text extracted successfully' };
 }
 
 const worker = new Worker('extract-text', processJob, {
@@ -38,7 +60,7 @@ const worker = new Worker('extract-text', processJob, {
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
     },
-    concurrency: 5, 
+    concurrency: 5,
     removeOnComplete: { count: 100 }, // Keep last 100 completed jobs
     removeOnFail: { count: 1000 }, // Keep last 1000 failed jobs
 });
@@ -83,5 +105,5 @@ function shutdown() {
     }, 10000);
 }
 
-process.on('SIGINT', shutdown);  
+process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown); 
