@@ -1,0 +1,26 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_PASSWORD: xxx
+      DB_USERNAME: postgres
+      DB_NAME: FilesService
+      DB_HOST: localhost
+      DB_PORT: 5432
+      JWT_SECRET: xxx
+      JWT_EXPIRY_MIN: 30
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AWS_REGION: ap-south-1
+      AWS_ACCESS_KEY_ID: xxx
+      AWS_SECRET_ACCESS_KEY: xxx
+      NODE_ENV: production
+  

@@ -4,7 +4,8 @@ import { ApiResponse } from "../structs/io";
 import { getUser } from "../db/queries/user";
 import { comparePassword, generateAuthToken } from "../helpers/auth";
 import * as dotenv from 'dotenv';
-dotenv.config();
+
+if (process.env.NODE_ENV !== 'production') dotenv.config();
 
 
 export async function userLogin(req: Request, res: Response) {

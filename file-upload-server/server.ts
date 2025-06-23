@@ -3,14 +3,14 @@ import * as dotenv from 'dotenv';
 import authRouter from './src/routers/auth';
 import filesRouter from './src/routers/files';
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') dotenv.config();
 const app = express();
 app.use(express.json())
 
 const port = process.env.PORT;
 
 app.get('/', (req, res) => {
-  res.send({ 
+  res.send({
     message: "Hello Files API",
   });
 });
@@ -28,14 +28,14 @@ function shutdown() {
   console.log('Received shutdown signal. Closing server...');
   server.close(() => {
     console.log('HTTP server closed.');
-    process.exit(0); 
+    process.exit(0);
   });
 
   // Force shutdown if it takes too long
   setTimeout(() => {
     console.error('Forcefully shutting down...');
     process.exit(1);
-  }, 10000); 
+  }, 10000);
 }
 
 // Listen for termination signals

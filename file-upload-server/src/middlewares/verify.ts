@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import * as dotenv from 'dotenv';
-dotenv.config();
+
+if (process.env.NODE_ENV !== 'production') dotenv.config();
 
 
 export function verifyAuthToken(request: Request, response: Response, next: NextFunction) {
